@@ -9,8 +9,11 @@ import smtplib
 import os
 import threading
 from email.message import EmailMessage
+import resend 
 
+from dotenv import load_dotenv
 load_dotenv()
+resend.api_key = os.getenv("RESEND_API_KEY")
 
 app = Flask(__name__)
 app.secret_key = "thesecretshelf_secret_key"
@@ -248,21 +251,23 @@ def create_database():
 
 
 def send_confirmation_email(email, username, cart, total):
-    book_list = ""
+    book_list_text = ""
+    book_list_html = ""
 
     for book in cart:
-        book_list += f"- {book['title']} by {book['authors']} - ${book['price']}\n"
+        book_list_text += f"- {book['title']} by {book['authors']} - ${book['price']}\n"
+        book_list_html += f"<li><strong>{book['title']}</strong> by {book['authors']} - ${book['price']}</li>"
 
     subject = "Your Secret Shelf Order Confirmation"
 
-    body = f"""
+    text_body = f"""
 Hello {username},
 
 Thank you for shopping with The Secret Shelf!
 
 Your order includes:
 
-{book_list}
+{book_list_text}
 
 Order Total: ${total}
 
@@ -270,43 +275,57 @@ Thank you,
 The Secret Shelf
 """
 
+    html_body = f"""
+    <div style="font-family: Arial, sans-serif; color: #3b2a2f;">
+        <h1 style="color: #8f3f61;">The Secret Shelf</h1>
+        <h2>Order Confirmation</h2>
+
+        <p>Hello {username},</p>
+
+        <p>Thank you for shopping with <strong>The Secret Shelf</strong>!</p>
+
+        <p>Your order includes:</p>
+
+        <ul>
+            {book_list_html}
+        </ul>
+
+        <h3>Order Total: ${total}</h3>
+
+        <p>Thank you,<br>The Secret Shelf</p>
+    </div>
+    """
+
     print("", flush=True)
     print("====================================", flush=True)
     print("THE SECRET SHELF ORDER CONFIRMATION EMAIL", flush=True)
     print("====================================", flush=True)
     print(f"To: {email}", flush=True)
-    print(body, flush=True)
+    print(text_body, flush=True)
     print("====================================", flush=True)
 
-    mail_username = os.getenv("MAIL_USERNAME")
-    mail_password = os.getenv("MAIL_PASSWORD")
-
-    print("MAIL_USERNAME loaded:", bool(mail_username), flush=True)
-    print("MAIL_PASSWORD loaded:", bool(mail_password), flush=True)
-
-    if not mail_username or not mail_password:
-        print("Email credentials are missing on Render.", flush=True)
+    if not os.getenv("RESEND_API_KEY"):
+        print("RESEND_API_KEY is missing.", flush=True)
         return False
 
     try:
-        msg = EmailMessage()
-        msg["Subject"] = subject
-        msg["From"] = mail_username
-        msg["To"] = email
-        msg.set_content(body)
+        response = resend.Emails.send({
+            "from": "The Secret Shelf <onboarding@resend.dev>",
+            "to": [email],
+            "subject": subject,
+            "html": html_body
+        })
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=8) as server:
-            server.login(mail_username, mail_password)
-            server.send_message(msg)
-
-        print("Real email sent successfully.", flush=True)
+        print("Resend email sent successfully.", flush=True)
+        print("Resend response:", response, flush=True)
         return True
 
     except Exception as e:
-        print("Real email failed to send.", flush=True)
+        print("Resend email failed.", flush=True)
         print("Error type:", type(e).__name__, flush=True)
         print("Error:", e, flush=True)
         return False
+    
 def send_email_in_background(email, username, cart, total):
     email_thread = threading.Thread(
         target=send_confirmation_email,

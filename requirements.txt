@@ -4,3 +4,4 @@ flask-mail
 werkzeug
 python-dotenv
 gunicorn
+resend
