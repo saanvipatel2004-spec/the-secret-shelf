@@ -219,22 +219,26 @@ def create_database():
         )
     """)
 
-
-default_username = "ProfK"
-default_password = "1234"
-
-existing_user = conn.execute(
-    "SELECT * FROM users WHERE username = ?",
-    (default_username,)
-).fetchone()
-
-if existing_user is None:
+    default_username = "professor"
+    default_password = "secret123"
     hashed_password = generate_password_hash(default_password)
 
-    conn.execute("""
-        INSERT INTO users (username, password)
-        VALUES (?, ?)
-    """, (default_username, hashed_password))
+    existing_user = conn.execute(
+        "SELECT * FROM users WHERE username = ?",
+        (default_username,)
+    ).fetchone()
+
+    if existing_user is None:
+        conn.execute("""
+            INSERT INTO users (username, password)
+            VALUES (?, ?)
+        """, (default_username, hashed_password))
+    else:
+        conn.execute("""
+            UPDATE users
+            SET password = ?
+            WHERE username = ?
+        """, (hashed_password, default_username))
 
     conn.commit()
     conn.close()
