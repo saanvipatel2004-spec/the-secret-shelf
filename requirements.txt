@@ -1,0 +1,6 @@
+flask
+requests
+flask-mail
+werkzeug
+python-dotenv
+gunicorn

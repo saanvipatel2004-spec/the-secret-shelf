@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="hero-section">
+    <div>
+        <p class="eyebrow">Curated online bookstore</p>
+        <h1>Discover your next favorite novel.</h1>
+        <p class="hero-text">
+            Browse a soft, modern collection of popular novels with ratings, prices, and beautiful book covers.
+        </p>
+    </div>
+</section>
+
+<section class="search-section">
+    <input type="text" id="bookSearch" placeholder="Search by title or author..." onkeyup="searchBooks()">
+</section>
+
+<div class="book-grid">
+    {% for book in books %}
+    <div class="book-card">
+        <img src="{{ book.image }}" alt="{{ book.title }}"
+            onerror="this.src='https://via.placeholder.com/150x220?text=Book+Cover';">
+
+        <h3>{{ book.title }}</h3>
+
+        <p class="author">{{ book.authors }}</p>
+
+        <p class="description">{{ book.description }}</p>
+
+        <div class="book-info">
+            <span>⭐ {{ book.rating }}</span>
+            <span>${{ book.price }}</span>
+        </div>
+
+        <a class="button" href="/add_to_cart/{{ book.id }}">Add to Cart</a>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function searchBooks() {
+        let input = document.getElementById("bookSearch").value.toLowerCase();
+        let cards = document.getElementsByClassName("book-card");
+
+        for (let i = 0; i < cards.length; i++) {
+            let title = cards[i].getElementsByTagName("h3")[0].innerText.toLowerCase();
+            let author = cards[i].getElementsByClassName("author")[0].innerText.toLowerCase();
+
+            if (title.includes(input) || author.includes(input)) {
+                cards[i].style.display = "";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+{% endblock %}

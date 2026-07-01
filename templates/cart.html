@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Your Cart</h1>
+
+{% if cart %}
+<div class="cart-box">
+
+    {% for book in cart %}
+    <div class="cart-item">
+        <img src="{{ book.image }}" alt="{{ book.title }}"
+            onerror="this.src='https://via.placeholder.com/150x220?text=Book+Cover';">
+
+        <div>
+            <h3>{{ book.title }}</h3>
+            <p>{{ book.authors }}</p>
+            <p>⭐ {{ book.rating }}</p>
+            <p>${{ book.price }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+    <h2>Total: ${{ total }}</h2>
+
+    <a class="checkout-button" href="/checkout">Checkout</a>
+
+</div>
+{% else %}
+
+<p>Your cart is empty.</p>
+
+<a class="button" href="/books">Browse Books</a>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Profile - The Secret Shelf</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-box">
+        <h1>Create Profile</h1>
+        <p>Create your The Secret Shelf username and password.</p>
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Create username" required>
+
+            <input type="password" name="password" placeholder="Create password" required>
+
+            <button type="submit">Create Profile</button>
+        </form>
+
+        <p class="small-text">
+            Already have an account?
+            <a href="/login">Login here</a>
+        </p>
+    </div>
+
+</body>
+</html>

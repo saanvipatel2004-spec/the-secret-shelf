@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Checkout</h1>
+
+<div class="checkout-box">
+    <h2>Order Summary</h2>
+
+    {% for book in cart %}
+    <div class="checkout-item">
+        <p><strong>{{ book.title }}</strong> — ${{ book.price }}</p>
+    </div>
+    {% endfor %}
+
+    <h2>Total: ${{ total }}</h2>
+
+    <form method="POST">
+        <label>Enter your email for order confirmation:</label>
+        <input type="email" name="email" placeholder="example@email.com" required>
+
+        <button type="submit">Purchase Books</button>
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="confirmation-box">
+    <h1>Thank you for your purchase!</h1>
+
+    <p>Your order total was <strong>${{ total }}</strong>.</p>
+
+    <p>A confirmation email was sent to:</p>
+
+    <h3>{{ email }}</h3>
+
+    <a class="button" href="/books">Continue Shopping</a>
+</div>
+
+{% endblock %}
