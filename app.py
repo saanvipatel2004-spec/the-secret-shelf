@@ -6,6 +6,8 @@ import sqlite3
 import requests
 import random
 import os
+import threading
+from email.message import EmailMessage
 
 load_dotenv()
 
@@ -292,6 +294,23 @@ The Secret Shelf
         print("Real email failed to send.")
         print("Error:", e)
 
+def send_email_in_background(email, username, cart, total):
+    email_thread = threading.Thread(
+        target=send_confirmation_email,
+        args=(email, username, cart, total)
+    )
+
+    email_thread.daemon = True
+    email_thread.start()
+
+def send_email_in_background(email, username, cart, total):
+    email_thread = threading.Thread(
+        target=send_confirmation_email,
+        args=(email, username, cart, total)
+    )
+
+    email_thread.daemon = True
+    email_thread.start()
 
 @app.route("/")
 def home():
@@ -406,7 +425,6 @@ def cart():
 
     return render_template("cart.html", cart=cart, total=total)
 
-
 @app.route("/checkout", methods=["GET", "POST"])
 def checkout():
     if "username" not in session:
@@ -437,7 +455,10 @@ def checkout():
         conn.commit()
         conn.close()
 
-        send_confirmation_email(email, session["username"], cart, total)
+        try:
+            send_email_in_background(email, session["username"], cart, total)
+        except Exception as e:
+            print("Checkout email background error:", e)
 
         session["cart"] = []
 
