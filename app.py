@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import sqlite3
 import requests
 import random
+import smtplib
 import os
 import threading
 from email.message import EmailMessage
@@ -252,7 +253,7 @@ def send_confirmation_email(email, username, cart, total):
     for book in cart:
         book_list += f"- {book['title']} by {book['authors']} - ${book['price']}\n"
 
-    subject = "Your The Secret Shelf Order Confirmation"
+    subject = "Your Secret Shelf Order Confirmation"
 
     body = f"""
 Hello {username},
@@ -269,31 +270,43 @@ Thank you,
 The Secret Shelf
 """
 
-    print("")
-    print("====================================")
-    print("The Secret Shelf ORDER CONFIRMATION EMAIL")
-    print("====================================")
-    print(f"To: {email}")
-    print(body)
-    print("====================================")
-    print("")
+    print("", flush=True)
+    print("====================================", flush=True)
+    print("THE SECRET SHELF ORDER CONFIRMATION EMAIL", flush=True)
+    print("====================================", flush=True)
+    print(f"To: {email}", flush=True)
+    print(body, flush=True)
+    print("====================================", flush=True)
+
+    mail_username = os.getenv("MAIL_USERNAME")
+    mail_password = os.getenv("MAIL_PASSWORD")
+
+    print("MAIL_USERNAME loaded:", bool(mail_username), flush=True)
+    print("MAIL_PASSWORD loaded:", bool(mail_password), flush=True)
+
+    if not mail_username or not mail_password:
+        print("Email credentials are missing on Render.", flush=True)
+        return False
 
     try:
-        msg = Message(
-            subject,
-            sender=app.config["MAIL_USERNAME"],
-            recipients=[email]
-        )
+        msg = EmailMessage()
+        msg["Subject"] = subject
+        msg["From"] = mail_username
+        msg["To"] = email
+        msg.set_content(body)
 
-        msg.body = body
-        mail.send(msg)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=8) as server:
+            server.login(mail_username, mail_password)
+            server.send_message(msg)
 
-        print("Real email sent successfully.")
+        print("Real email sent successfully.", flush=True)
+        return True
 
     except Exception as e:
-        print("Real email failed to send.")
-        print("Error:", e)
-
+        print("Real email failed to send.", flush=True)
+        print("Error type:", type(e).__name__, flush=True)
+        print("Error:", e, flush=True)
+        return False
 def send_email_in_background(email, username, cart, total):
     email_thread = threading.Thread(
         target=send_confirmation_email,
@@ -456,10 +469,10 @@ def checkout():
         conn.close()
 
         try:
-            send_email_in_background(email, session["username"], cart, total)
+            send_confirmation_email(email, session["username"], cart, total)
         except Exception as e:
-            print("Checkout email background error:", e)
-
+             print("Checkout email error:", e, flush=True)
+      
         session["cart"] = []
 
         return render_template("confirmation.html", total=total, email=email)
